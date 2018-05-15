@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" 
+"http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<include file="struts-default.xml" />
+	<package name="any" extends="struts-default">
+	
+	
+<!-- Defining the actions for Page Load -->			
+		<action name="displayCompanies" 
+				class="com.accelo.api.bean.CompanyBean" 
+				method="validateCompaniesLoad">
+			<result name="Success">index.jsp</result>
+			<result name="Failure">index.jsp</result>
+			<result name="input">index.jsp</result>
+		</action>	
+		
+		<!-- Defining the actions for Click Company -->				
+		<action name="clickCompany" 
+		class="com.accelo.api.bean.CompanyDetailsBean" 
+				method="viewCompanyDetails">
+			<result name="Success">companydetail.jsp</result>
+			<result name="Failure">companydetail.jsp</result>
+			<result name="input">index.jsp</result>
+		</action>
+		
+		<!-- Defining the actions for creating a company -->				
+		<action name="createCompany" 
+		class="com.accelo.api.bean.CompanyBean" 
+				method="createCompany">
+			<result name="Success">createCompany.jsp</result>
+			<result name="Failure">createCompany.jsp</result>
+			<result name="input">createCompany.jsp</result>
+		</action>
+		
+		<!-- Defining the actions for fetch company before update -->				
+		<action name="fetchCompany" 
+		class="com.accelo.api.bean.CompanyBean" 
+				method="companyFetch">
+			<result name="Success">updatecompany.jsp</result>
+			<result name="Failure">index.jsp</result>
+			<result name="input">index.jsp</result>
+		</action>
+		
+		<!-- Defining the actions for update Company -->				
+		<action name="updateCompany" 
+		class="com.accelo.api.bean.CompanyBean" 
+				method="updateCompany">
+			<result name="Success">updatecompany.jsp</result>
+			<result name="Failure">updatecompany.jsp</result>
+			<result name="input">updatecompany.jsp</result>
+		</action>
+		
+		<!-- Defining the actions to create a contact -->				
+		<action name="createContact" 
+		class="com.accelo.api.action.ContactsAction" 
+				method="createContact">
+			<result name="Success">createContact.jsp</result>
+			<result name="Failure">createContact.jsp</result>
+			<result name="input">createContact.jsp</result>
+		</action>
+		
+		<!-- Defining the action for displaying all contacts-->
+		<action name="ViewAllContacts" class="com.accelo.api.action.ViewAllContactsAction">
+			<result name="SUCCESS">viewallcontacts.jsp</result>
+			<result name="FAIL">index.jsp</result>
+			<result name="input">index.jsp</result>
+		</action>
+		
+		<!-- Defining the action to choose a company-->
+		<action name="alignCompanies" 
+		class="com.accelo.api.action.LinkContactWithCompany" 
+				method="showResults">
+			<result name="Success">linkcontact.jsp</result>
+			<result name="Failure">linkcontact.jsp</result>
+			<result name="input">linkcontact.jsp</result>
+		</action>
+		
+		<!-- Defining the action to create the mapping with a company-->
+		<action name="createContactMapping" 
+		class="com.accelo.api.action.LinkContactWithCompany" 
+				method="createMapping">
+			<result name="Success">index.jsp</result>
+			<result name="FAIL">index.jsp</result>
+			<result name="input">index.jsp</result>
+		</action>
+		
+		<!-- Defining the actions for fetch contact before update -->				
+		<action name="fetchContact" 
+		class="com.accelo.api.action.UpdateContactsAction" 
+				method="getContact">
+			<result name="Success">updatecontact.jsp</result>
+			<result name="Failure">index.jsp</result>
+			<result name="input">index.jsp</result>
+		</action>
+		
+		<!-- Defining the actions to perform update on the contact. -->				
+		<action name="updateContact" 
+		class="com.accelo.api.action.UpdateContactsAction" 
+				method="updateContact">
+			<result name="Success">updatecontact.jsp</result>
+			<result name="Failure">updatecontact.jsp</result>
+			<result name="input">updatecontact.jsp</result>
+		</action>
+		
+		<!-- Defining the actions to create a project. -->				
+		<action name="projectCreation" 
+		class="com.accelo.api.action.ProjectsAction" 
+				method="createProject">
+			<result name="Success">index.jsp</result>
+			<result name="Failure">createproject.jsp</result>
+			<result name="input">createproject.jsp</result>
+		</action>
+		
+		<!-- Defining the actions to view all projects. -->				
+		<action name="ViewAllProjects" 
+		class="com.accelo.api.action.AllProjects" 
+				method="viewProjectDetails">
+			<result name="Success">viewallprojects.jsp</result>
+		</action>
+		
+		<!-- Defining the actions to view and update projects. -->				
+		<action name="viewProject" 
+		class="com.accelo.api.action.AllProjects" 
+				method="viewProjectByID">
+			<result name="Success">updateproject.jsp</result>
+		</action>
+		
+		<!-- Defining the actions to update project contacts. -->				
+		<action name="updateProject" 
+		class="com.accelo.api.action.AllProjects" 
+				method="updateContact">
+			<result name="Success">updateproject.jsp</result>
+			<result name="input">updateproject.jsp</result>
+		</action>
+		
+	</package>
+</struts>
