@@ -1,3 +1,17 @@
+/**
+ * Assignment done for the job at Accelo
+ *
+ * File Name       : FetchCompanies_DAO.java
+ *
+ * Description     : Manage the database operations related to company details.
+ *
+ * Version         : 1.0.0.
+ *
+ * Created Date    : May 11, 2018
+ * 
+ * Created By 	   : Praveen Vinny
+ */
+
 package com.accelo.api.dao;
 
 import java.sql.PreparedStatement;
@@ -12,30 +26,51 @@ import com.accelo.api.bean.CompanyDetailsBean;
 import com.accelo.api.bean.ContactBean;
 import com.accelo.api.util.ConnectDatabase;
 
+/**
+ * This class defines the operations required to obtain the details related to a company from the DB.
+ * @author Praveen Vinny
+ *
+ */
 public class FetchCompanies_DAO {
 
+	/**
+	 * The following method creates a list with the details of all active companies in the database.
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	public static List<CompanyBean> getCompaniesFromDB() throws ClassNotFoundException, SQLException {
-		List<CompanyBean> companiesList = new ArrayList<CompanyBean>();
+		List<CompanyBean> companiesList = new ArrayList<CompanyBean>(); // List to store company details.
 		ConnectDatabase.connectDB();
 		Statement st = ConnectDatabase.con.createStatement();
 		String query = "SELECT DISTINCT ID, title, WEBSITE FROM ACCELO.TA001_COMPANY where IS_ENABLED = 'Y'";
 		ResultSet rs = st.executeQuery(query);
-		CompanyBean companyBean;
+		CompanyBean companyBean;	// A new object is required each time to get values assigned.
 		while (rs.next()) {
-			companyBean = new CompanyBean();
+			companyBean = new CompanyBean();	// A new object is created by invoking the constructor.
 			companyBean.setCompanyID(rs.getInt(1));
 			companyBean.setTitle(rs.getString(2));
 			companyBean.setWebsite(rs.getString(3));
-			companiesList.add(companyBean);
+			companiesList.add(companyBean);	// Object is pushed to the list post assignment of values.
 		}
 		return companiesList;
 	}
 
+	/**
+	 * The details corresponding to a particular company are fetched from DB by this method.
+	 * @param companyID
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	public static CompanyDetailsBean getCompanyFromDB(int companyID) throws ClassNotFoundException, SQLException {
 		ConnectDatabase.connectDB();
-		System.out.println("Inside the fetch query.");
 		String query = "Select ID, TITLE, WEBSITE from TA001_COMPANY WHERE ID = ?";
 		
+		/**
+		 * PreparedStatement is used to prevent SQL injections and to assign values to the query.
+		 * This query will fetch the details such as the company ID, title and website.
+		 */
 		PreparedStatement preparedStatement = ConnectDatabase.con.prepareStatement(query);
 		preparedStatement.setInt(1, companyID);
 		ResultSet rs = preparedStatement.executeQuery();
@@ -45,6 +80,13 @@ public class FetchCompanies_DAO {
 		companyDetailsBean.setCompanyID(rs.getInt(1));
 		companyDetailsBean.setTitle(rs.getString(2));
 		companyDetailsBean.setWebsite(rs.getString(3));
+		
+		/**
+		 * A contact list needs to be created by fetching the details of all contacts associated with
+		   this company.
+		 * 
+		 * The following method obtains the list of contacts.
+		 */
 		
 		List<ContactBean> contactsList = new ArrayList<ContactBean>();
 		
@@ -70,10 +112,20 @@ public class FetchCompanies_DAO {
 		return companyDetailsBean;
 	}
 
+	/**
+	 * This method is used to create a new company in the database.
+	 * @param companyBean
+	 * @return
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
 	public static String insertCompanyIntoDB(CompanyBean companyBean) throws SQLException, ClassNotFoundException {
-		String result = "Insertion failed!";
+		String result = "Insertion failed!";	// Default value of the return message.
 		ConnectDatabase.connectDB();
 		
+		/**
+		 * Checking if the company already exists in the database.
+		 */
 		String query= "Select count(1) from ACCELO.TA001_COMPANY where upper(trim(title)) = ?"
 				+ "and TA001_COMPANY.IS_ENABLED = ?";
 		PreparedStatement ps = ConnectDatabase.con.prepareStatement(query);
@@ -81,12 +133,14 @@ public class FetchCompanies_DAO {
 		ps.setString(2, "Y");
 		ResultSet rs = ps.executeQuery();
 		rs.next();
-		int count = rs.getInt(1);
+		int count = rs.getInt(1);	// The number of companies gets returned to this variable.
 		
-		if(count > 0) {
+		if(count > 0) {	
+			// If more than one value exists in the database.
 			result = "Company already exists with the name as " + companyBean.getTitle();
 			return result;
 		} else {
+			// Checking if a company exists but in the disabled state in the database.
 			query= "Select count(1) from ACCELO.TA001_COMPANY where upper(trim(title)) = ? "
 					+ "and TA001_COMPANY.IS_ENABLED = ?";
 			ps = ConnectDatabase.con.prepareStatement(query);
@@ -98,6 +152,7 @@ public class FetchCompanies_DAO {
 	        ConnectDatabase.con.close();
 			
 			if(count > 0) {
+				// If a company exists in the database, but was disabled, just enable that one.
 				ConnectDatabase.connectDB();
 				query= "UPDATE ACCELO.TA001_COMPANY SET IS_ENABLED = ? where upper(trim(title)) = ? "
 						+ "and TA001_COMPANY.IS_ENABLED = ?";
@@ -110,6 +165,9 @@ public class FetchCompanies_DAO {
 				result = "The system disabled company with the title as " + companyBean.getTitle() + " is enabled again.";
 				return result;
 			} else {
+				/**
+				 * If a company doesn't exist at all, create a new one in the database.
+				 */
 				ConnectDatabase.connectDB();
 				query="INSERT INTO ACCELO.TA001_COMPANY (TITLE, WEBSITE) "
 						+ "VALUES(?,?)";
@@ -117,6 +175,10 @@ public class FetchCompanies_DAO {
 				ps.setString(1, companyBean.getTitle());
 				ps.setString(2, companyBean.getWebsite());
 				ps.executeUpdate();
+				
+				/**
+				 * Obtaining the ID and title of the company inserted into the database.
+				 */
 				query= "Select id, title from ACCELO.TA001_COMPANY where upper(trim(title)) = ? "
 						+ "and TA001_COMPANY.IS_ENABLED = ?";
 				ps = ConnectDatabase.con.prepareStatement(query);
@@ -133,11 +195,22 @@ public class FetchCompanies_DAO {
 		}
 	}
 
+	/**
+	 * The following method is used to update the details corresponding to a company.
+	 * @param companyBean
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
 	public static String updateCompanyDB(CompanyBean companyBean) throws ClassNotFoundException, SQLException {
 		String result = "Update failed!";
 		ConnectDatabase.connectDB();
-		System.out.println("In here with the ID: "+companyBean.getCompanyID());
 		
+		/**
+		 * Checking if the company ID exists in the database.
+		 * The incorrect ID cannot come here because the value is set by user's click on company.
+		 * But this can happen if the value is entered manually by the user.
+		 */
 		String query= "Select count(1) from ACCELO.TA001_COMPANY where id = ?";
 		PreparedStatement ps = ConnectDatabase.con.prepareStatement(query);
 		ps.setInt(1, companyBean.getCompanyID());
@@ -146,6 +219,7 @@ public class FetchCompanies_DAO {
 		int count = rs.getInt(1);
 		
 		if(count == 1) {
+			// Update the values corresponding to the ID as soon as the matching ID is found.
 			query= "UPDATE ACCELO.TA001_COMPANY SET title = ?, website = ? where ID = ? ";
 			ConnectDatabase.connectDB();
 			ps = ConnectDatabase.con.prepareStatement(query);
@@ -157,22 +231,31 @@ public class FetchCompanies_DAO {
 	        result = "Company with the ID: "+companyBean.getCompanyID() + " got updated.";
 			return result;
 		} else {
+			// If the count is 0, ID is not found. Then, display the message as the ID is not found.
 				result = "Company with the ID: "+companyBean.getCompanyID() + " not found.";
 				ConnectDatabase.con.close();
 				return result;
 		}
 	}
 
+	/**
+	 * This method is used to populate the list of all companies from the database.
+	 * @return
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
 	public static ArrayList<CompanyBean> getCompanyNamesFromDB() throws SQLException, ClassNotFoundException {
+		// The following array list is used to store the details of all companies.
 		ArrayList<CompanyBean> companiesList = new ArrayList<CompanyBean> ();
 		ConnectDatabase.connectDB();
+		// Fetching all records from the database where the details are enabled.
 		String query = "Select distinct ID, TITLE, WEBSITE from TA001_COMPANY WHERE IS_ENABLED = ? ";
 		
 		PreparedStatement preparedStatement = ConnectDatabase.con.prepareStatement(query);
 		preparedStatement.setString(1, "Y");
 		ResultSet rs = preparedStatement.executeQuery();
 		
-		CompanyBean companyBean;
+		CompanyBean companyBean;	// Each row of result set is set to new instances of the bean.
 		
 		while (rs.next()) {
 			companyBean = new CompanyBean();
@@ -181,7 +264,7 @@ public class FetchCompanies_DAO {
 			companiesList.add(companyBean);
 		}
 
-		return companiesList;
+		return companiesList;	// List of companies are returned.
 	}
 
 }

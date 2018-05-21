@@ -7,7 +7,9 @@ import java.sql.SQLException;
 public class ConnectDatabase 
 {
 public static Connection con;
-	
+	/**
+	*	Please edit this method with the database credentials.
+	*/
 	public static void connectDB() throws ClassNotFoundException
 	{
 		Class.forName("oracle.jdbc.driver.OracleDriver");
