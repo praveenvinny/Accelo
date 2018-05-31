@@ -111,6 +111,7 @@ public class AllProjects extends ActionSupport {
 
 	public String viewProjectByID() throws ClassNotFoundException, SQLException {
 		AllProjects project = new AllProjects();
+		System.out.println("Project ID = "+this.projectID);
 		project = Projects_DAO.getProjectByID(this.getProjectID());
 		this.company = project.company;
 		this.ID = project.ID;
@@ -145,11 +146,11 @@ public class AllProjects extends ActionSupport {
 			 * values when the page gets refreshed.
 			 */
 			this.projectID = AllProjects.oldProjectID;
+			System.out.println(this.projectID);
+			System.out.println(this.email);
+			System.out.println(this.phone);
 			AllProjects.oldEmail = this.email;
 			AllProjects.oldPhone = this.phone;
-			viewProjectByID();
-			this.email = AllProjects.oldEmail;
-			this.phone = AllProjects.oldPhone;
 			String result = Projects_DAO.updateProjectDB(this);
 			addFieldError("resultLabel", result);
 			return "Success";

@@ -103,33 +103,47 @@ public class Projects_DAO {
 		if(count== 0) {
 			return "No records exists in the database with the details provided.";
 		} else {
-			query = "Select A.ID from TA002_CONTACT_DETAILS A where upper(trim(A.EMAIL)) = ? and upper(trim(A.PHONE)) = ?";
+			query = "Select distinct A.ID from TA002_CONTACT_DETAILS A where upper(trim(A.EMAIL)) = ? and upper(trim(A.PHONE)) = ?";
 			ps = ConnectDatabase.con.prepareStatement(query);
 			ps.setString(1, projectBean.getEmail().trim().toUpperCase());
 			ps.setString(2, projectBean.getPhone().trim().toUpperCase());
 			rs = ps.executeQuery();
 			rs.next();
 			int mappingID = rs.getInt(1);
+			System.out.println("Mapping ID = " + mappingID);
 			
-			query = "Select ID from TA001_COMPANY A where upper(trim(A.TITLE)) =  ? and IS_ENABLED = ?";
+			query = "Select distinct COMPANY from TA001_PROJECT A where A.ID = ?";
 			ps = ConnectDatabase.con.prepareStatement(query);
-			ps.setString(1, projectBean.getCompany().trim().toUpperCase());
-			ps.setString(2, "Y");
+			ps.setInt(1, projectBean.getProjectID());
 			rs = ps.executeQuery();
 			rs.next();
 			int reqCompanyID = rs.getInt(1);	// We should check if this is the mapped ID.
+			System.out.println("Company ID = " + reqCompanyID);
 			
-			query = "Select COMPANY_ID, CONTACT_ID from TA002_CONTACT_COMPANY_MAPP A where A.CONTACT_ID = (Select CONTACT_ID from TA002_CONTACT_DETAILS where ID = ?)";
+			query = "SELECT count(1) FROM TA002_CONTACT_COMPANY_MAPP A WHERE A.CONTACT_ID = (SELECT CONTACT_ID FROM TA002_CONTACT_DETAILS WHERE ID = ? AND COMPANY_ID = ?)";
 			ps = ConnectDatabase.con.prepareStatement(query);
 			ps.setInt(1, mappingID);
+			ps.setInt(2, reqCompanyID);
 			rs = ps.executeQuery();
 			rs.next();
-			int newCompanyID = rs.getInt(1);
-			int contactID = rs.getInt(2);
+			count = rs.getInt(1);
 			
-			if(newCompanyID != reqCompanyID) {
+			if(count == 0) {
 				return "The company is not mapped with the contact.";
 			} else {
+				query = "SELECT distinct CONTACT_ID FROM TA002_CONTACT_COMPANY_MAPP A WHERE A.CONTACT_ID = (SELECT distinct CONTACT_ID FROM TA002_CONTACT_DETAILS WHERE ID = ?) AND COMPANY_ID = ?";
+				ps = ConnectDatabase.con.prepareStatement(query);
+				ps.setInt(1, mappingID);
+				ps.setInt(2, reqCompanyID);
+				rs = ps.executeQuery();
+				rs.next();
+				count = rs.getInt(1);
+				int contactID = rs.getInt(1);
+				
+				System.out.println(contactID);
+				System.out.println(mappingID);
+				System.out.println(projectBean.getProjectID());
+				
 				query= "Update TA001_PROJECT SET CONTACT = ? , MAPPING_ID = ? where ID = ?";
 				ps = ConnectDatabase.con.prepareStatement(query);
 				ps.setInt(1, contactID);

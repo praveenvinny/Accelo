@@ -40,8 +40,8 @@ public class Contacts_DAO {
 		String result = "Insertion failed!";
 		ConnectDatabase.connectDB();
 
-		String query = "Select count(1), ID from ACCELO.TA001_CONTACT where upper(trim(FIRST_NAME)) = ? "
-				+ "and upper(trim(SURNAME)) = ? and TA001_CONTACT.IS_ENABLED = ? group by ID";
+		String query = "Select count(1) from ACCELO.TA001_CONTACT where upper(trim(FIRST_NAME)) = ? "
+				+ "and upper(trim(SURNAME)) = ? and TA001_CONTACT.IS_ENABLED = ?";
 		PreparedStatement ps = ConnectDatabase.con.prepareStatement(query);
 		ps.setString(1, contactBean.getFirstName().toUpperCase().trim());
 		ps.setString(2, contactBean.getSurname().toUpperCase().trim());
@@ -49,9 +49,18 @@ public class Contacts_DAO {
 		ResultSet rs = ps.executeQuery();
 		rs.next();
 		int count = rs.getInt(1);
-		int recordID = rs.getInt(2);
+		int recordID = 0;
 
 		if (count > 0) {
+			query = "Select distinct ID from ACCELO.TA001_CONTACT where upper(trim(FIRST_NAME)) = ? "
+					+ "and upper(trim(SURNAME)) = ? and TA001_CONTACT.IS_ENABLED = ?";
+			ps = ConnectDatabase.con.prepareStatement(query);
+			ps.setString(1, contactBean.getFirstName().toUpperCase().trim());
+			ps.setString(2, contactBean.getSurname().toUpperCase().trim());
+			ps.setString(3, "Y");
+			rs = ps.executeQuery();
+			rs.next();
+			recordID = rs.getInt(1);
 			query = "Select count(ID) from ACCELO.TA002_CONTACT_DETAILS where upper(trim(EMAIL)) = ? and upper(trim(PHONE)) = ? and CONTACT_ID = ?";
 			ps = ConnectDatabase.con.prepareStatement(query);
 			ps.setString(1, contactBean.getEmail().toUpperCase().trim());
@@ -184,7 +193,8 @@ public class Contacts_DAO {
 		return contactBean;
 	}
 
-	public static String createCompContactMapping(int companyID, int contactID, int mappingID) throws ClassNotFoundException, SQLException {
+	public static String createCompContactMapping(int companyID, int contactID, int mappingID)
+			throws ClassNotFoundException, SQLException {
 		String result = "Updation not done!";
 		String query = "Select count(ID) from TA002_CONTACT_COMPANY_MAPP A where A.COMPANY_ID = ? and A.CONTACT_ID = ? and A.MAPPING_ID = ?";
 		PreparedStatement ps = ConnectDatabase.con.prepareStatement(query);
@@ -194,20 +204,20 @@ public class Contacts_DAO {
 		ResultSet rs = ps.executeQuery();
 		rs.next();
 		int count = rs.getInt(1);
-		
-		if(count>0) {
+
+		if (count > 0) {
 			result = "Company is already mapped with the contact.";
-		} else {		
-		query = "INSERT INTO ACCELO.TA002_CONTACT_COMPANY_MAPP (COMPANY_ID, CONTACT_ID, MAPPING_ID) VALUES (?, ?, ?)";
-		ConnectDatabase.connectDB();
-		ps = ConnectDatabase.con.prepareStatement(query);
-		ps.setInt(1, companyID);
-		ps.setInt(2, contactID);
-		ps.setInt(3, mappingID);
-		ps.executeUpdate();
-		result = "Contact and Company was mapped successfully!";
+		} else {
+			query = "INSERT INTO ACCELO.TA002_CONTACT_COMPANY_MAPP (COMPANY_ID, CONTACT_ID, MAPPING_ID) VALUES (?, ?, ?)";
+			ConnectDatabase.connectDB();
+			ps = ConnectDatabase.con.prepareStatement(query);
+			ps.setInt(1, companyID);
+			ps.setInt(2, contactID);
+			ps.setInt(3, mappingID);
+			ps.executeUpdate();
+			result = "Contact and Company was mapped successfully!";
 		}
-		
+
 		return result;
 	}
 
@@ -228,41 +238,42 @@ public class Contacts_DAO {
 		return contactBean;
 	}
 
-	public static String updateContactDB(UpdateContactsAction updateContactsAction) throws SQLException, ClassNotFoundException {
+	public static String updateContactDB(UpdateContactsAction updateContactsAction)
+			throws SQLException, ClassNotFoundException {
 		String result = "Update failed!";
 		ConnectDatabase.connectDB();
-		System.out.println("In here with the ID: "+updateContactsAction.getID());
-		
-		String query= "Select count(1) from ACCELO.TA001_CONTACT where id = ?";
+		System.out.println("In here with the ID: " + updateContactsAction.getID());
+
+		String query = "Select count(1) from ACCELO.TA001_CONTACT where id = ?";
 		PreparedStatement ps = ConnectDatabase.con.prepareStatement(query);
 		ps.setInt(1, updateContactsAction.getID());
 		ResultSet rs = ps.executeQuery();
 		rs.next();
 		int count = rs.getInt(1);
-		
-		if(count == 1) {
-			query= "UPDATE ACCELO.TA001_CONTACT SET FIRST_NAME = ?, SURNAME = ? where ID = ? ";
+
+		if (count == 1) {
+			query = "UPDATE ACCELO.TA001_CONTACT SET FIRST_NAME = ?, SURNAME = ? where ID = ? ";
 			ConnectDatabase.connectDB();
 			ps = ConnectDatabase.con.prepareStatement(query);
 			ps.setString(1, updateContactsAction.getFirstName());
 			ps.setString(2, updateContactsAction.getSurname());
 			ps.setInt(3, updateContactsAction.getID());
 			ps.executeUpdate();
-	        ConnectDatabase.con.close();
-	        query= "UPDATE ACCELO.TA002_CONTACT_DETAILS SET EMAIL = ?, PHONE = ? where ID = ? ";
+			ConnectDatabase.con.close();
+			query = "UPDATE ACCELO.TA002_CONTACT_DETAILS SET EMAIL = ?, PHONE = ? where ID = ? ";
 			ConnectDatabase.connectDB();
 			ps = ConnectDatabase.con.prepareStatement(query);
 			ps.setString(1, updateContactsAction.getEmail());
 			ps.setString(2, updateContactsAction.getPhone());
 			ps.setInt(3, updateContactsAction.getMappingID());
 			ps.executeUpdate();
-	        ConnectDatabase.con.close();
-	        result = "Contact with the ID: "+updateContactsAction.getMappingID() + " got updated.";
+			ConnectDatabase.con.close();
+			result = "Contact with the ID: " + updateContactsAction.getMappingID() + " got updated.";
 			return result;
 		} else {
-				result = "Contact with the ID: "+updateContactsAction.getID() + " not found.";
-				ConnectDatabase.con.close();
-				return result;
+			result = "Contact with the ID: " + updateContactsAction.getID() + " not found.";
+			ConnectDatabase.con.close();
+			return result;
 		}
 	}
 
